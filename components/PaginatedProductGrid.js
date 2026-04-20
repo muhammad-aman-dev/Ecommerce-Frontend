@@ -44,7 +44,7 @@ const PaginatedProductGrid = ({
                           <h3 className="text-sm md:text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors line-clamp-2 md:line-clamp-1">{product.name}</h3>
                           <div className="flex items-center justify-between mt-2">
                             <span className="text-sm sm:text-2xl font-black text-slate-900">
-                              {currency} {convertedPrice}
+                              {currency} {getPrice(product.price)}
                             </span>
                             <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg">
                               <FaStar className="text-orange-400" size={12} />
