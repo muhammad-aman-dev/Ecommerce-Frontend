@@ -7,7 +7,7 @@ import { getAuthUser } from "@/store/slices/authSlice";
 import { getCategories } from "@/store/slices/categorySlice";
 import { fetchBanners } from "@/store/slices/generalDataSlice";
 import { fetchExchangeRates } from "@/store/slices/currencySlice"; 
-import { hydrateCart } from "@/store/slices/cartSlice"; // <-- updated action
+import { hydrateCart } from "@/store/slices/cartSlice"; 
 import GlobalLoader from "@/components/GlobalLoader";
 
 function AuthLoader({ children }) {

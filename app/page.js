@@ -3,7 +3,7 @@
 import HeroCarousel from "@/components/HeroCarousel";
 import Image from "next/image";
 import Link from "next/link";
-import { FaFire, FaArrowRight, FaStar } from "react-icons/fa";
+import { FaArrowRight, FaStar } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
