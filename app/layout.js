@@ -66,6 +66,9 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
+      <head>
+        <meta name="google-site-verification" content="aMNposdDi4Pp7h8SlRpVHu5FAHHQA_U9P_TaYrlP0VQ" />
+      </head>
       <body className={`${fontVariables} font-inter antialiased bg-stone-50 text-slate-900`}>
         <Providers>
           <Navbar />
