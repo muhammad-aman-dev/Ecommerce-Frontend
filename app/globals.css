@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* Body text uses Inter */
+body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Headings use Poppins */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 700;
+}
+
+/* Buttons / CTA accent text */
+button, .accent-text {
+  font-family: var(--font-quicksand), sans-serif;
+  font-weight: 500;
+}
+
+/* Code blocks / inline code use Geist Mono */
+code, pre {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* Prose (markdown content) */
+.prose {
+  max-width: 100%;       /* Prevent horizontal overflow */
+  word-break: break-word; /* Wrap long words/URLs */
+  overflow-wrap: anywhere;
+  padding-left: 0.5rem;  /* small padding on mobile */
+  padding-right: 0.5rem;
+}
+
+/* Responsive headings */
+.prose h1 {
+  font-size: 1.5rem;
+}
+
+@media (min-width: 640px) { /* sm */
+  .prose h1 { font-size: 2rem; }
+}
+
+.prose h2 {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .prose h2 { font-size: 1.75rem; }
+}
+
+.prose h3 {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .prose h3 { font-size: 1.5rem; }
+}
+
+.prose h4 {
+  font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+  .prose h4 { font-size: 1.25rem; }
+}
+
+/* Lists */
+.prose ul {
+  list-style-type: disc;
+  margin-left: 1rem;
+  padding-left: 0;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  margin-left: 1rem;
+  padding-left: 0;
+}
+
+/* Code block responsive tweaks */
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 100px;
+  border: 2px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #14b8a6;
+  cursor: grab;
+}
+
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
