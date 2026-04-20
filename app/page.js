@@ -102,6 +102,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchHomeProducts = async () => {
       try {
+        console.log(process.env.NEXT_PUBLIC_BACKEND_URL+"/general/homepagedata")
         setIsLoading(true);
         const response = await axiosInstance.get("/general/homepagedata");
 
