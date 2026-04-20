@@ -40,16 +40,17 @@ const PaginatedProductGrid = ({
                 />
               </div>
               <div className="px-2">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{product.category}</p>
-                <h3 className="text-sm md:text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors line-clamp-2 md:line-clamp-1">{product.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs md:text-xl font-black text-slate-900">{currency} {getPrice(product.price)}</span>
-                  <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                    <FaStar className="text-orange-400" size={12} />
-                    <span className="text-[11px] font-black text-slate-600">{product.rating || "5.0"}</span>
-                  </div>
-                </div>
-              </div>
+                          <h3 className="text-sm md:text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors line-clamp-2 md:line-clamp-1">{product.name}</h3>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-sm sm:text-2xl font-black text-slate-900">
+                              {currency} {convertedPrice}
+                            </span>
+                            <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg">
+                              <FaStar className="text-orange-400" size={12} />
+                              <span className="text-xs font-bold text-slate-600">{product.rating || 0}</span>
+                            </div>
+                          </div>
+                        </div>
             </Link>
           ))
         )}
