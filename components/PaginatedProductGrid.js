@@ -43,7 +43,7 @@ const PaginatedProductGrid = ({
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{product.category}</p>
                 <h3 className="text-sm md:text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors line-clamp-2 md:line-clamp-1">{product.name}</h3>
                 <div className="flex items-center justify-between">
-                  <span className="text-xl font-black text-slate-900">{currency} {getPrice(product.price)}</span>
+                  <span className="text-xs md:text-xl font-black text-slate-900">{currency} {getPrice(product.price)}</span>
                   <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                     <FaStar className="text-orange-400" size={12} />
                     <span className="text-[11px] font-black text-slate-600">{product.rating || "5.0"}</span>
