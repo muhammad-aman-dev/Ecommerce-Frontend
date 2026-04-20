@@ -144,7 +144,7 @@ export default function Login() {
               <div className="relative">
                 <input
                   className="w-full bg-teal-50 border-2 border-teal-100 p-4 rounded-2xl text-center text-2xl font-black tracking-[0.5em] text-teal-700 focus:outline-none focus:border-teal-400"
-                  placeholder="0000"
+                  placeholder="000000"
                   maxLength={6}
                   onChange={e => setOtp(e.target.value)}
                 />
