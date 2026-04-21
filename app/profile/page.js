@@ -11,6 +11,7 @@ import {
 import axiosInstance from "@/lib/axios";
 import { toast } from "react-toastify";
 import imageCompression from "browser-image-compression";
+import Swal from "sweetalert2";
 
 const ProfilePage = () => {
   const fileInputRef = useRef(null);
@@ -141,6 +142,40 @@ const ProfilePage = () => {
         setIsSubmittingRating(false);
     }
   };
+
+  const handleRequestRefund = async (orderId) => {
+  const result = await Swal.fire({
+    title: "Request Refund?",
+    text: "Are you sure you want to request a refund for this order? This action will be reviewed by our admins.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#e11d48", // rose-600
+    cancelButtonColor: "#64748b", // slate-500
+    confirmButtonText: "Yes, Request",
+    customClass: {
+      popup: 'rounded-[2rem] font-sans',
+      confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-6 py-3',
+      cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-6 py-3'
+    }
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const { data } = await axiosInstance.patch(`/auth/request-refund/${orderId}`);
+      if (data.success) {
+        Swal.fire({
+          title: "Requested!",
+          text: "Your refund request has been submitted.",
+          icon: "success",
+          customClass: { popup: 'rounded-[2rem]' }
+        });
+        fetchOrders(); // Refresh the list to show new status
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Refund request failed");
+    }
+  }
+};
 
   // --- IMPROVED FILTERING LOGIC ---
   const filteredOrders = orders.filter((order) => {
@@ -335,18 +370,36 @@ const ProfilePage = () => {
                                 <p className="text-lg md:text-2xl font-black text-slate-900">{order.currency} {order.totalAmountLocal.toFixed(2)}</p>
                               </div>
                             </div>
-                            
+                            {/* REFUND STATUS BADGE */}
+{order.refundStatus && order.refundStatus !== "none" && (
+  <span className={`px-3 py-1.5 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${
+    order.refundStatus === 'requested' ? 'bg-blue-50 text-blue-600' : 
+    order.refundStatus === 'approved' ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'
+  }`}>
+    Refund: {order.refundStatus}
+  </span>
+)}
                             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                               {order.buyerStatus === "pending" && !isRejected && (
                                 <button onClick={() => handleOpenRatingModal(order._id)} className="flex-1 bg-teal-600 text-white px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-teal-700 shadow-lg shadow-teal-100 transition-all">
                                   Mark Received
                                 </button>
                               )}
-                              {canRefund && (
-                                <button className="flex-1 bg-white text-rose-500 border-2 border-rose-100 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-rose-50 flex items-center justify-center gap-2 transition-all">
-                                  <FaUndoAlt size={10} /> Request Refund
-                                </button>
-                              )}
+                              {canRefund && order.refundStatus === "none" && (
+  <button 
+    onClick={() => handleRequestRefund(order._id)}
+    className="flex-1 bg-white text-rose-500 border-2 border-rose-100 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-rose-50 flex items-center justify-center gap-2 transition-all"
+  >
+    <FaUndoAlt size={10} /> Request Refund
+  </button>
+)}
+
+{/* Displaying state if already requested */}
+{order.refundStatus === "requested" && (
+  <div className="flex-1 text-center py-3.5 border-2 border-dashed border-blue-100 rounded-xl md:rounded-2xl">
+     <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Refund Processing...</p>
+  </div>
+)}
                             </div>
                           </div>
                         </div>

@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TradeXon / Ecommerce Frontend
+
+A modern **Next.js** frontend for a multi-vendor ecommerce marketplace.
+
+## Overview
+
+This project is a marketplace-style ecommerce frontend with:
+- a homepage featuring a hero carousel and product sections
+- product listing and product detail experiences
+- cart, login, signup, profile, and order pages
+- seller-focused pages and admin UI sections
+- global data loading for auth, categories, banners, exchange rates, and cart state
+
+## Tech Stack
+
+- **Next.js**
+- **React**
+- **Redux Toolkit**
+- **Tailwind CSS**
+- **React Toastify**
+- **React Slick**
+- **Framer Motion**
+- **Axios**
+- **React Hook Form**
+- **React PDF Renderer**
+
+## Features
+
+- Responsive homepage with:
+  - hero carousel
+  - featured products
+  - trending products
+  - best sellers
+  - new arrivals
+- Redux-based app state management
+- Authentication loading and user bootstrap
+- Category and banner loading on app start
+- Currency exchange-rate loading
+- Cart hydration from local storage
+- Product cards, grids, descriptions, and pagination
+- Seller and admin navigation/footer components
+- Invoice template support
+- Toast notifications
+
+## Project Structure
+
+```text
+app/
+  admin/
+  cart/
+  categories/
+  contact/
+  login/
+  order/
+  privacy-policy/
+  products/
+  profile/
+  search/
+  seller-details/[id]/
+  seller-policy/
+  seller/
+  signup/
+  terms-and-conditions/
+components/
+hooks/
+lib/
+public/
+store/
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js
+- npm
+
+### Installation
+
+```bash
+git clone https://github.com/muhammad-aman-dev/Ecommerce-Frontend.git
+cd Ecommerce-Frontend
+npm install
+```
+
+### Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+The app uses environment-based URLs in several places. Create a `.env.local` file and add the variables required by your backend and frontend deployment.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Example:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:3000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+```
 
-## Deploy on Vercel
+## Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- The branding in the app metadata uses **TradeXon**.
+- The repository also includes a deployed site reference in GitHub’s About section.
+- If you are connecting this frontend to a backend API, make sure the backend endpoints match the routes used by the Redux slices and homepage data loader.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+No license file was found in the repository. Add one if you want to define usage terms.
