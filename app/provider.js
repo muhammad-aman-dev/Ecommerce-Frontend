@@ -17,6 +17,12 @@ function AuthLoader({ children }) {
   const { isLoading } = useSelector((state) => state.category);
   const { isLoadingGeneralData } = useSelector((state) => state.generalData);
   const { loading: isRatesLoading } = useSelector((state) => state.currency); 
+const [timeoutReached, setTimeoutReached] = useState(false);
+
+useEffect(() => {
+  const timer = setTimeout(() => setTimeoutReached(true), 5000);
+  return () => clearTimeout(timer);
+}, []);
 
   useEffect(() => {
     dispatch(getAuthUser());
@@ -31,9 +37,12 @@ function AuthLoader({ children }) {
   }, [dispatch]);
 
   // Show global loader if any essential data is loading
-  if (isCheckingAuth || isLoading || isLoadingGeneralData || isRatesLoading) {
-    return <GlobalLoader />;
-  }
+  if (
+  (isCheckingAuth || isLoading || isLoadingGeneralData || isRatesLoading) &&
+  !timeoutReached
+) {
+  return <GlobalLoader />;
+}
 
   return children;
 }
