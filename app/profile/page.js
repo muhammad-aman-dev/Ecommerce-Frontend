@@ -143,33 +143,63 @@ const ProfilePage = () => {
     }
   };
 
-  const handleRequestRefund = async (orderId) => {
-  const result = await Swal.fire({
-    title: "Request Refund?",
-    text: "Are you sure you want to request a refund for this order? This action will be reviewed by our admins.",
-    icon: "warning",
+ const handleRequestRefund = async (orderId) => {
+  const { value: formValues } = await Swal.fire({
+    title: "Request Refund",
+    html: `
+      <div class="text-left">
+        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Reason</label>
+        <select id="swal-reason" class="swal2-input rounded-xl! text-sm! mt-1! mb-4! border-slate-200! focus:border-rose-500! focus:ring-0!">
+          <option value="Item not as described">Item not as described</option>
+          <option value="Damaged product">Damaged product</option>
+          <option value="Missing parts">Missing parts</option>
+          <option value="Late delivery">Late delivery</option>
+          <option value="Other">Other</option>
+        </select>
+        
+        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Explanation</label>
+        <textarea id="swal-message" class="swal2-textarea rounded-xl! text-sm! mt-1! border-slate-200! focus:border-rose-500! focus:ring-0!" placeholder="Please provide details about the issue..."></textarea>
+      </div>
+    `,
     showCancelButton: true,
     confirmButtonColor: "#e11d48", // rose-600
     cancelButtonColor: "#64748b", // slate-500
-    confirmButtonText: "Yes, Request",
+    confirmButtonText: "Submit Request",
     customClass: {
-      popup: 'rounded-[2rem] font-sans',
-      confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-6 py-3',
-      cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-6 py-3'
+      popup: 'rounded-[2rem] font-sans px-4 py-6',
+      confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
+      cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3'
+    },
+    preConfirm: () => {
+      const reason = document.getElementById('swal-reason').value;
+      const message = document.getElementById('swal-message').value;
+      if (!message) {
+        Swal.showValidationMessage('Please provide an explanation');
+        return false;
+      }
+      return { reason, message };
     }
   });
 
-  if (result.isConfirmed) {
+  if (formValues) {
     try {
-      const { data } = await axiosInstance.patch(`/auth/request-refund/${orderId}`);
+      const { data } = await axiosInstance.patch(`/auth/request-refund/${orderId}`, {
+        reason: formValues.reason,
+        message: formValues.message
+      });
+
       if (data.success) {
         Swal.fire({
           title: "Requested!",
-          text: "Your refund request has been submitted.",
+          text: "Admin will review your request shortly.",
           icon: "success",
-          customClass: { popup: 'rounded-[2rem]' }
+          confirmButtonColor: "#0d9488", // teal-600
+          customClass: { 
+            popup: 'rounded-[2rem]',
+            confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
+          }
         });
-        fetchOrders(); // Refresh the list to show new status
+        fetchOrders(); // Refresh status in UI
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Refund request failed");
