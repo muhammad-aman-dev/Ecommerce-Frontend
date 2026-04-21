@@ -1,7 +1,7 @@
 "use client";
 
 import { Provider, useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import store from "@/store/store";
 import { getAuthUser } from "@/store/slices/authSlice";
 import { getCategories } from "@/store/slices/categorySlice";
