@@ -246,8 +246,9 @@ export default function DashboardPage() {
       {/* Header Section */}
       <div className="max-w-7xl mx-auto mb-10">
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-          Admin<span className="text-indigo-600">Dashboard</span>
+          Admin<span className="text-indigo-600 hidden md:flex">Dashboard</span>
         </h1>
+<p className="text-indigo-600 flex md:hidden">Dashboard</p>
         <p className="text-slate-500 font-medium mt-1">
           Welcome back, {authAdmin?.name || 'Admin'}. Here is what's happening today.
         </p>
