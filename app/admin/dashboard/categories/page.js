@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 
-const MAX_CATEGORY_LENGTH = 18;
+const MAX_CATEGORY_LENGTH = 24;
 
 const CategoriesPage = () => {
   const router = useRouter();
@@ -33,13 +33,22 @@ const CategoriesPage = () => {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
+    console.log("Sending request...");
     const trimmed = newCategory.trim();
-    if (!trimmed || trimmed.length > MAX_CATEGORY_LENGTH) return;
+    if (!trimmed) {
+  toast.error("Category name required");
+  return;
+}
+
+if (trimmed.length > MAX_CATEGORY_LENGTH) {
+  toast.error(`Max ${MAX_CATEGORY_LENGTH} characters allowed`);
+  return;
+}
     
     setIsSubmitting(true);
     try {
       const res = await axiosInstance.post("/admin/add-category", { name: trimmed });
-      setCategories([...categories, res.data]);
+      setCategories((prev) => [...prev, res.data]);
       setNewCategory("");
       toast.success("Category Added Successfully...");
     } catch (error) {

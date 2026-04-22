@@ -18,7 +18,8 @@ import {
   FaKey,
   FaChevronRight,
   FaGlobeAmericas,
-  FaStar
+  FaStar,
+  FaUndoAlt
 } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import Swal from "sweetalert2";
@@ -156,6 +157,15 @@ const modules = [
     route: "/admin/dashboard/change-password",
     color: "text-slate-900",
     bg: "bg-slate-200"
+  },
+  {
+    id: 15,
+    title: "Refund Requests",
+    description: "Review and process buyer refund claims",
+    icon: <FaUndoAlt />,
+    route: "/admin/dashboard/refund-requests",
+    color: "text-rose-600",
+    bg: "bg-rose-50"
   },
   {
     id: 99, // Special ID for the manual trigger
