@@ -103,7 +103,7 @@ const SellerNav = () => {
             }`}>
                 <div className="p-6 flex flex-col gap-5">
                     <Link
-                        href="/profile"
+                        href="/seller/dashboard"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-4 p-3 bg-white/5 rounded-2xl"
                     >
