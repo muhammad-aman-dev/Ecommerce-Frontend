@@ -6,11 +6,13 @@ import CategoryExplorerClient from "./CategoryExplorerPage";
 const getCategoriesData = async () => {
   try {
     const response = await axiosInstance.get(
-      `/general/getproductsbycategories`,
-      {
-        next: { revalidate: 60 }, // ISR
-      }
-    );
+  `/general/getproductsbycategories`,
+  {
+    headers: {
+      "Cache-Control": "no-cache",
+    },
+  }
+);
 
     return response.data.productsByCategory || {};
   } catch (error) {
