@@ -1,4 +1,5 @@
 // app/categories/page.js
+export const dynamic = "force-dynamic";
 import axiosInstance from "@/lib/axios";
 import CategoryExplorerClient from "./CategoryExplorerPage";
 
@@ -6,14 +7,8 @@ import CategoryExplorerClient from "./CategoryExplorerPage";
 const getCategoriesData = async () => {
   try {
     const response = await axiosInstance.get(
-  `/general/getproductsbycategories`,
-  {
-    headers: {
-      "Cache-Control": "no-cache",
-    },
-  }
-);
-
+  `/general/getproductsbycategories`);
+       console.log(response.data.productsByCategory)
     return response.data.productsByCategory || {};
   } catch (error) {
     console.error("Fetch error:", error);
