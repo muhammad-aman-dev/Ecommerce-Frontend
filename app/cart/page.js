@@ -142,8 +142,8 @@ export default function CartPage() {
       (sum, i) => sum + i.priceUSD * i.quantity,
       0,
     );
-    if (totalUSD < 12) {
-      toast.error("Minimum order amount $12 USD.");
+    if (totalUSD < 10) {
+      toast.error("Minimum order amount $10 USD.");
       return;
     }
     setIsModalOpen(true);
