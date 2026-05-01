@@ -19,13 +19,16 @@ import {
   FaChevronRight,
   FaGlobeAmericas,
   FaStar,
-  FaUndoAlt
+  FaUndoAlt,
+  FaExclamationTriangle 
 } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import Swal from "sweetalert2";
 
 const modules = [
-  // --- SECTION 1: USER MANAGEMENT ---
+  // ==============================
+  // SECTION 1: USER MANAGEMENT
+  // ==============================
   {
     id: 1,
     title: "Seller Requests",
@@ -48,26 +51,28 @@ const modules = [
     id: 3,
     title: "Merchant Control",
     description: "Manage and toggle seller status",
-    icon: <FaUserShield />, 
-    route: "/admin/dashboard/manage-seller", 
+    icon: <FaUserShield />,
+    route: "/admin/dashboard/manage-seller",
     color: "text-rose-600",
     bg: "bg-rose-100"
   },
   {
     id: 4,
-    title: "Add or Remove Admins",
-    description: "Manage platform Admins",
+    title: "Admins",
+    description: "Add or remove platform admins",
     icon: <FaUser />,
     route: "/admin/dashboard/manage-admins",
     color: "text-violet-600",
     bg: "bg-violet-50"
   },
 
-  // --- SECTION 2: INVENTORY & OPERATIONS ---
+  // ==============================
+  // SECTION 2: INVENTORY & OPERATIONS
+  // ==============================
   {
     id: 5,
     title: "Products",
-    description: "View and manage all marketplace products",
+    description: "Manage all marketplace products",
     icon: <FaBoxOpen />,
     route: "/admin/dashboard/products",
     color: "text-amber-600",
@@ -76,7 +81,7 @@ const modules = [
   {
     id: 6,
     title: "Categories",
-    description: "Manage product categories and hierarchy",
+    description: "Manage product categories",
     icon: <FaTags />,
     route: "/admin/dashboard/categories",
     color: "text-rose-600",
@@ -85,7 +90,7 @@ const modules = [
   {
     id: 7,
     title: "Orders",
-    description: "Track all marketplace orders and shipping",
+    description: "Track orders and shipping",
     icon: <FaShoppingCart />,
     route: "/admin/dashboard/orders",
     color: "text-emerald-600",
@@ -94,27 +99,29 @@ const modules = [
   {
     id: 8,
     title: "Payments",
-    description: "Manage seller payouts and transactions",
+    description: "Manage transactions and payouts",
     icon: <FaMoneyBillWave />,
     route: "/admin/dashboard/payments",
     color: "text-green-600",
     bg: "bg-green-50"
   },
 
-  // --- SECTION 3: MARKETING & GROWTH ---
+  // ==============================
+  // SECTION 3: MARKETING & GROWTH
+  // ==============================
   {
     id: 9,
     title: "Featured Products",
-    description: "Select top products for homepage spotlight",
-    icon: <FaStar />, 
+    description: "Highlight products on homepage",
+    icon: <FaStar />,
     route: "/admin/dashboard/featured",
     color: "text-yellow-600",
     bg: "bg-yellow-50"
   },
   {
     id: 10,
-    title: "Banner Management",
-    description: "Add and manage homepage sliders",
+    title: "Banners",
+    description: "Manage homepage sliders",
     icon: <FaImage />,
     route: "/admin/dashboard/banners",
     color: "text-fuchsia-600",
@@ -123,18 +130,20 @@ const modules = [
   {
     id: 11,
     title: "Analytics",
-    description: "View sales trends and platform metrics",
+    description: "View platform performance",
     icon: <FaChartLine />,
     route: "/admin/dashboard/analytics",
     color: "text-cyan-600",
     bg: "bg-cyan-50"
   },
 
-  // --- SECTION 4: SYSTEM & SUPPORT ---
+  // ==============================
+  // SECTION 4: SYSTEM & SUPPORT
+  // ==============================
   {
     id: 12,
     title: "Contact Messages",
-    description: "Review customer queries and complaints",
+    description: "Customer queries and complaints",
     icon: <FaFlag />,
     route: "/admin/dashboard/contact-messages",
     color: "text-red-600",
@@ -142,37 +151,50 @@ const modules = [
   },
   {
     id: 13,
-    title: "Exchange Rates",
-    description: "Global USD to Local currency settings",
-    icon: <FaGlobeAmericas />,
-    route: "/admin/dashboard/exchange-rates",
-    color: "text-teal-600",
-    bg: "bg-teal-50"
+    title: "Seller Complaints",
+    description: "Handle complaints against sellers",
+    icon: <FaExclamationTriangle />, // NEW ICON
+    route: "/admin/dashboard/seller-complaints",
+    color: "text-orange-600",
+    bg: "bg-orange-50"
   },
   {
     id: 14,
-    title: "Account Security",
-    description: "Update admin password and credentials",
-    icon: <FaKey />,
-    route: "/admin/dashboard/change-password",
-    color: "text-slate-900",
-    bg: "bg-slate-200"
-  },
-  {
-    id: 15,
     title: "Refund Requests",
-    description: "Review and process buyer refund claims",
+    description: "Process buyer refund claims",
     icon: <FaUndoAlt />,
     route: "/admin/dashboard/refund-requests",
     color: "text-rose-600",
     bg: "bg-rose-50"
   },
   {
-    id: 99, // Special ID for the manual trigger
+    id: 15,
+    title: "Exchange Rates",
+    description: "Manage currency conversion",
+    icon: <FaGlobeAmericas />,
+    route: "/admin/dashboard/exchange-rates",
+    color: "text-teal-600",
+    bg: "bg-teal-50"
+  },
+  {
+    id: 16,
+    title: "Account Security",
+    description: "Update admin credentials",
+    icon: <FaKey />,
+    route: "/admin/dashboard/change-password",
+    color: "text-slate-900",
+    bg: "bg-slate-200"
+  },
+
+  // ==============================
+  // SPECIAL ACTION
+  // ==============================
+  {
+    id: 99,
     title: "Force Payout Check",
-    description: "Manually execute the maturation check for all orders now",
+    description: "Manually trigger payout processing",
     icon: <FaMoneyBillWave />,
-    route: "#", // No route because it's a function call
+    route: "#",
     color: "text-amber-600",
     bg: "bg-amber-100"
   }
