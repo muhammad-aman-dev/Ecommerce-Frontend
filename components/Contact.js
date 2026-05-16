@@ -69,7 +69,7 @@ const ContactPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-slate-700 font-bold">
                   <FaPhoneAlt className="text-teal-600" />
-                  <span>+1 (555) 000-1234</span>
+                  <span>+92 370 8381873</span>
                 </div>
                 <div className="flex items-center gap-4 text-slate-700 font-bold">
                   <FaEnvelope className="text-teal-600" />
@@ -83,9 +83,9 @@ const ContactPage = () => {
               <h3 className="text-xl font-black mb-2">Global HQ</h3>
               <p className="text-slate-400 text-sm mb-6">Visit our design district office.</p>
               <p className="font-bold leading-relaxed">
-                123 Luxury Avenue,<br />
-                Suite 500, New York<br />
-                NY 10001, USA
+                DHA Multan,<br />
+Multan, Punjab<br />
+Pakistan
               </p>
             </div>
 
