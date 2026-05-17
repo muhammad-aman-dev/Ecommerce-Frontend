@@ -1,6 +1,8 @@
 const BASE_URL = "https://www.tradexon.store";
 
 export default function sitemap() {
+  const lastModified = new Date();
+
   const routes = [
     "",
     "/login",
@@ -19,7 +21,7 @@ export default function sitemap() {
 
   return routes.map((route) => ({
     url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
+    lastModified,
     changeFrequency: "weekly",
     priority: route === "" ? 1 : 0.7,
   }));
