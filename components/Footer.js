@@ -30,21 +30,30 @@ const Footer = () => {
               world-class sellers and conscious consumers.
             </p>
           </div>
+<div className="flex flex-wrap gap-x-16 gap-y-6">
+  <div className="flex flex-col gap-3">
+    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Platform</span>
+    <Link href="/categories" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Browse Categories</Link>
+    <Link href="/become-seller" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Become a Seller</Link>
+    <Link href="/seller-policy" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Seller Policy</Link>
+  </div>
+  
+  <div className="flex flex-col gap-3">
+    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Support</span>
+    <Link href="/contact" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Contact Us</Link>
+  </div>
 
-          {/* Navigation - Updated Links */}
-          <div className="flex flex-wrap gap-x-16 gap-y-6">
-            <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Platform</span>
-              <Link href="/categories" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Browse Categories</Link>
-              {/* Corrected path to match BecomeSellerPage metadata */}
-              <Link href="/become-seller" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Become a Seller</Link>
-              <Link href="/seller-policy" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Seller Policy</Link>
-            </div>
-            <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Support</span>
-              <Link href="/contact" className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">Contact Us</Link>
-            </div>
-          </div>
+  {/* Add this new block right here */}
+  <div className="flex flex-col gap-3 max-w-[200px]">
+    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Headquarters</span>
+    <address className="not-italic text-sm font-bold text-slate-700 space-y-1 leading-relaxed">
+      <p>DHA Multan,</p>
+      <p>Multan, 60000,</p>
+      <p>Pakistan.</p>
+    </address>
+  </div>
+</div>
+
 
           {/* Social Icons */}
           <div className="flex gap-6">
