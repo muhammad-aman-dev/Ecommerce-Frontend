@@ -28,7 +28,7 @@ export default function GlobalLoader() {
         {/* Text with elegant tracking */}
         <div className="text-center">
           <p className="text-teal-900 font-black text-xs uppercase tracking-[0.3em] ml-[0.3em]">
-            Authenticating
+            Loading.....
           </p>
           <div className="flex justify-center gap-1 mt-2">
             <span className="w-1 h-1 bg-teal-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
