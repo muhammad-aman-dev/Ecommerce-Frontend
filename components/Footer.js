@@ -50,6 +50,9 @@ const Footer = () => {
       <p>DHA Multan,</p>
       <p>Multan, 60000,</p>
       <p>Pakistan.</p>
+<a href="tel:+923708381873" className="hover:text-teal-600 transition-colors">
+        +92 370 8381873
+      </a>
     </address>
   </div>
 </div>
