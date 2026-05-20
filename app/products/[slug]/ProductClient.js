@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState , useEffect} from "react";
 import Image from "next/image";
-import axiosInstance from "@/lib/axios";
 import {
   FaShoppingCart,
   FaShieldAlt,
@@ -21,14 +19,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
 import Link from "next/link";
 
-export default function ProductPage() {
-  const { params } = useParams();
+export default function ProductClient({ product })  {
   const dispatch = useDispatch();
-
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [selectedImage, setSelectedImage] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariations, setSelectedVariations] = useState({});
   const [basePrice, setBasePrice] = useState(0);
@@ -37,24 +30,14 @@ export default function ProductPage() {
   const { currency, exchangeRates } = useSelector((state) => state.currency);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get(`/general/get-product/${params}`);
-        const data = response.data.product;
-        setProduct(data);
-        setSelectedImage(data.images[0]);
-        setBasePrice(data.price);
-        setMaxStock(data.stock);
-        setLoading(false);
-      } catch (err) {
-        setError(true);
-        setLoading(false);
-        toast.error("Could not load product details");
-      }
-    };
-    if (params) fetchProduct();
-  }, [params]);
+  if (!product) return;
+
+  const firstImage = product.images?.[0];
+
+  setSelectedImage(firstImage || null);
+  setBasePrice(product.price || 0);
+  setMaxStock(product.stock || 0);
+}, [product]);
 
   useEffect(() => {
     if (!product) return;
@@ -106,31 +89,7 @@ export default function ProductPage() {
     }));
     toast.success("Added to cart!");
   };
-  console.log(product?.sellerId)
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-teal-600 font-bold tracking-widest uppercase text-xs">Loading Product...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6 text-center">
-        <div>
-          <FaExclamationCircle size={50} className="text-rose-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-slate-800">Product Not Found</h2>
-          <button onClick={() => (window.location.href = "/")} className="bg-teal-600 text-white px-8 py-3 rounded-2xl font-bold mt-4">
-            Back to Shop
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!product) return null;
 
   return (
     <div className="min-h-screen bg-white pb-32 lg:pb-12 lg:py-12 px-4 md:px-8">
@@ -139,10 +98,13 @@ export default function ProductPage() {
         {/* IMAGE GALLERY */}
         <div className="space-y-6 lg:sticky lg:top-24 h-fit">
           <div className="relative aspect-square rounded-4xl md:rounded-[3rem] overflow-hidden bg-slate-50 border border-slate-100 shadow-2xl shadow-teal-900/5">
-            <Image src={selectedImage} alt={product.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain p-6 md:p-10 transition-all duration-500" loading="eager" priority />
+            <Image
+  src={selectedImage || product.images?.[0] || "/placeholder.png"}
+  alt={product.name}
+  fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain p-6 md:p-10 transition-all duration-500" loading="eager" priority />
           </div>
           <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-            {product.images.map((img, idx) => (
+            {product.images?.map((img, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedImage(img)}

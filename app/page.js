@@ -8,6 +8,15 @@ import axiosInstance from "@/lib/axios";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
+const createProductSlug = (product) => {
+  const slug = product.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // convert spaces/symbols to -
+    .replace(/^-|-$/g, ""); // remove leading/trailing -
+
+  return `${slug}-${product._id}`;
+};
+
 // Skeleton loader for products
 const SkeletonCard = () => (
   <div className="animate-pulse">
@@ -32,7 +41,7 @@ const ProductGrid = ({ products, isLoading, currency, exchangeRates }) => (
           return (
             <Link
               key={product._id}
-              href={`/products/${product._id}`}
+              href={`/products/${createProductSlug(product)}`}
               className="group cursor-pointer"
             >
               {/* Image Container */}
