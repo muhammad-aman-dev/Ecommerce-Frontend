@@ -5,13 +5,22 @@ import Link from "next/link";
 import { FaArrowRight, FaStar, FaTags, FaBoxOpen } from "react-icons/fa";
 import { useSelector } from "react-redux";
 
+const createProductSlug = (product) => {
+  const slug = product.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") 
+    .replace(/^-|-$/g, ""); 
+
+  return `${slug}-${product._id}`;
+};
+
 const ProductGrid = ({ products, currency, exchangeRates }) => (
   <div className="grid gap-8 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
     {products.map((product) => {
       const rate = exchangeRates[currency] || 1;
       const convertedPrice = (product.price * rate).toFixed(2);
       return (
-        <Link key={product._id} href={`/products/${product._id}`} className="group cursor-pointer">
+        <Link key={product._id} href={`/products/${createProductSlug(product)}`} className="group cursor-pointer">
           <div className="relative aspect-4/5 rounded-4xl overflow-hidden bg-slate-100 mb-4 shadow-sm group-hover:shadow-2xl transition-all duration-500">
             <Image
               src={product.images?.[0] || "/placeholder.png"}
