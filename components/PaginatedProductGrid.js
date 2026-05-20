@@ -12,6 +12,15 @@ const SkeletonCard = () => (
   </div>
 );
 
+const createProductSlug = (product) => {
+  const slug = product.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // convert spaces/symbols to -
+    .replace(/^-|-$/g, ""); // remove leading/trailing -
+
+  return `${slug}-${product._id}`;
+};
+
 const PaginatedProductGrid = ({ 
   title, products, isLoading, isInitialLoading, hasMore, onLoadMore, currency, exchangeRates 
 }) => {
@@ -28,7 +37,7 @@ const PaginatedProductGrid = ({
           Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (
           products.map((product) => (
-            <Link key={product._id} href={`/products/${product._id}`} className="group bg-white p-4 rounded-[2.5rem] border border-slate-100 hover:shadow-2xl transition-all duration-500">
+            <Link key={product._id} href={`/products/${createProductSlug(product)}`} className="group bg-white p-4 rounded-[2.5rem] border border-slate-100 hover:shadow-2xl transition-all duration-500">
               <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-50 mb-4">
                 <Image 
                   src={product.images?.[0] || "/placeholder.png"} 

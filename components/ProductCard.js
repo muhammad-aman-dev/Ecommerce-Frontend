@@ -4,6 +4,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { FaEye } from "react-icons/fa"
 
+const createProductSlug = (product) => {
+  const slug = product.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // convert spaces/symbols to -
+    .replace(/^-|-$/g, ""); // remove leading/trailing -
+
+  return `${slug}-${product._id}`;
+};
+
 const ProductCard = ({ product }) => {
 
   return (
@@ -42,7 +51,7 @@ const ProductCard = ({ product }) => {
           </span>
 
           <Link
-            href={`/products/${product._id}`}
+            href={`/products/${createProductSlug(product)}`}
             className="flex items-center gap-2 bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition text-sm"
           >
             <FaEye/>
