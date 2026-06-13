@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import React, { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import axiosInstance from '@/lib/axios';
 import { 
   FaCheckCircle, FaTimesCircle, FaBoxOpen, 
   FaUser, FaArrowLeft, FaTruck, FaShieldAlt 
@@ -11,67 +10,13 @@ import {
 
 function ReturnPageContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   
-  const basketId = searchParams.get('basketId');
-const transactionAmount = searchParams.get('transaction_amount');
-const orderDate = searchParams.get('order_date');
+  // Directly pull the status and basketId from the URL queries
+  const statusQuery = searchParams.get('result')
+  const basketId = searchParams.get('basketId')
 
-  // States to manage backend data fetching (plain JavaScript)
-  const [status, setStatus] = useState('loading') // 'loading', 'success', 'failure'
-  const [errorMessage, setErrorMessage] = useState('')
-
-  useEffect(() => {
-    // If there is no basketId in the URL, drop out immediately to a failure state
-    if (!basketId) {
-      setStatus('failure')
-      setErrorMessage('Missing Basket Identification Token.')
-      return
-    }
-
-    const verifyPaymentStatus = async () => {
-      try {
-        const response = await axiosInstance.get(`/payment/webhook/payfast`, {
-  params: { 
-    basketId,
-    transactionAmount,
-    orderDate
-  }
-})
-        const data = response.data
-
-        if (data && data.success) {
-          setStatus('success')
-        } else {
-          setStatus('failure')
-          setErrorMessage(data?.message || 'Payment status could not be verified.')
-        }
-      } catch (error) {
-        console.error('Error fetching backend payment status:', error)
-        setStatus('failure')
-        
-        // Extract server side error text if Axios caught a non-2xx status code
-        const fallbackMsg = error.response?.data?.message || 'Network error occurred while verifying payment.'
-        setErrorMessage(fallbackMsg)
-      }
-    }
-
-    verifyPaymentStatus()
-  }, [basketId])
-
-  /* ================= LOADING STATE ================= */
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="font-black text-xs text-slate-400 uppercase tracking-widest animate-pulse">
-          Verifying Payment with Server...
-        </p>
-      </div>
-    )
-  }
-
-  /* ================= VERIFIED STATES ================= */
-  const isSuccess = status === 'success'
+  // Check if the URL explicitly states success, otherwise default to failure layout
+  const isSuccess = statusQuery === 'success'
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
@@ -90,7 +35,9 @@ const orderDate = searchParams.get('order_date');
 
             <div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight">Payment Verified!</h1>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Basket ID: {basketId}</p>
+              {basketId && (
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Basket ID: {basketId}</p>
+              )}
             </div>
 
             <div className="p-5 bg-slate-50 rounded-2xl text-left border border-slate-100 space-y-3">
@@ -130,7 +77,7 @@ const orderDate = searchParams.get('order_date');
             <div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight">Transaction Failed</h1>
               <p className="text-xs font-bold text-red-400 uppercase tracking-widest mt-1">
-                {errorMessage || 'Payment Aborted'}
+                Payment Aborted
               </p>
             </div>
 
