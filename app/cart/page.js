@@ -176,13 +176,22 @@ export default function CartPage() {
         "/payment/create-invoice",
         orderData,
       );
-      if (data.paymentUrl) {
-        toast.success("Redirecting to Safepay checkout...");
-        itemsToPay.forEach((item) => handleRemove(item));
-        setSelectedItems({});
-        setIsModalOpen(false);
-        window.location.href = data.paymentUrl;
-      } else {
+      if (data.payment?.actionUrl) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = data.payment.actionUrl;
+
+  Object.entries(data.payment.fields).forEach(([key, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+} else {
         toast.error(data.message || "Failed to initiate payment.");
         setIsProcessing(false);
       }
@@ -529,7 +538,7 @@ export default function CartPage() {
                   )}
                 </button>
                 <p className="text-center text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-widest">
-                  Secure Checkout Powered by Safepay
+                  Secure Checkout Powered by PayFast
                 </p>
               </form>
             </div>
