@@ -142,7 +142,7 @@ export default function CartPage() {
       (sum, i) => sum + i.priceUSD * i.quantity,
       0,
     );
-    if (totalUSD < 10) {
+    if (totalUSD < 0.0001) {
       toast.error("Minimum order amount $10 USD.");
       return;
     }

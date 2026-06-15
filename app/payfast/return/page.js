@@ -7,6 +7,8 @@ import {
   FaCheckCircle, FaTimesCircle, FaBoxOpen, 
   FaUser, FaArrowLeft, FaTruck, FaShieldAlt 
 } from 'react-icons/fa'
+import { useEffect } from 'react'
+import axiosInstance from '@/lib/axios'
 
 function ReturnPageContent() {
   const searchParams = useSearchParams()
@@ -14,6 +16,30 @@ function ReturnPageContent() {
   // Directly pull the status and basketId from the URL queries
   const statusQuery = searchParams.get('result')
   const basketId = searchParams.get('basketId')
+  const errCode = searchParams.get('err_code')
+
+useEffect(() => {
+  const notifyFailedPayment = async () => {
+    try {
+      await axiosInstance.post('/payment/webhook/payfast-checkcode', {
+        basketId,
+        err_code: errCode,
+      })
+    } catch (error) {
+      console.error('Failed to notify backend:', error)
+    }
+  }
+
+  const successCodes = ['00', '000']
+  const isFailure =
+    basketId &&
+    errCode &&
+    !successCodes.includes(errCode)
+
+  if (isFailure) {
+    notifyFailedPayment()
+  }
+}, [basketId, errCode])
 
   // Check if the URL explicitly states success, otherwise default to failure layout
   const isSuccess = statusQuery === 'success'
