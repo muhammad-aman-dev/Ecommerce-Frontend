@@ -6,7 +6,8 @@ import Image from "next/image";
 import { 
   FaBox, FaClock, FaUser, FaUpload, 
   FaLock, FaCheckCircle, FaUndoAlt, FaCalendarAlt,
-  FaEnvelope, FaIdBadge, FaSpinner, FaInfoCircle, FaStar
+  FaEnvelope, FaIdBadge, FaSpinner, FaInfoCircle, FaStar,
+  FaCreditCard, FaMapMarkerAlt, FaStore, FaChevronDown
 } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import { toast } from "react-toastify";
@@ -21,6 +22,9 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("all-orders");
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Expanded Cards State Tracking
+  const [expandedOrders, setExpandedOrders] = useState({});
 
   // Avatar States
   const [selectedFile, setSelectedFile] = useState(null);
@@ -50,7 +54,6 @@ const ProfilePage = () => {
       setIsLoading(true);
       const response = await axiosInstance.get("/auth/my-orders");
       if (response.data.success) {
-        // Sort by date descending (Newest first)
         const sorted = response.data.orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setOrders(sorted);
       }
@@ -59,6 +62,13 @@ const ProfilePage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleOrderDetails = (orderId) => {
+    setExpandedOrders(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
   };
 
   const isRefundEligible = (statusDate) => {
@@ -143,78 +153,75 @@ const ProfilePage = () => {
     }
   };
 
- const handleRequestRefund = async (orderId) => {
-  const { value: formValues } = await Swal.fire({
-    title: "Request Refund",
-    html: `
-      <div class="text-left">
-        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Reason</label>
-        <select id="swal-reason" class="swal2-input rounded-xl! text-sm! mt-1! mb-4! border-slate-200! focus:border-rose-500! focus:ring-0!">
-          <option value="Item not as described">Item not as described</option>
-          <option value="Damaged product">Damaged product</option>
-          <option value="Missing parts">Missing parts</option>
-          <option value="Late delivery">Late delivery</option>
-          <option value="Other">Other</option>
-        </select>
-        
-        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Explanation</label>
-        <textarea id="swal-message" class="swal2-textarea rounded-xl! text-sm! mt-1! border-slate-200! focus:border-rose-500! focus:ring-0!" placeholder="Please provide details about the issue..."></textarea>
-      </div>
-    `,
-    showCancelButton: true,
-    confirmButtonColor: "#e11d48", // rose-600
-    cancelButtonColor: "#64748b", // slate-500
-    confirmButtonText: "Submit Request",
-    customClass: {
-      popup: 'rounded-[2rem] font-sans px-4 py-6',
-      confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
-      cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3'
-    },
-    preConfirm: () => {
-      const reason = document.getElementById('swal-reason').value;
-      const message = document.getElementById('swal-message').value;
-      if (!message) {
-        Swal.showValidationMessage('Please provide an explanation');
-        return false;
+  const handleRequestRefund = async (orderId) => {
+    const { value: formValues } = await Swal.fire({
+      title: "Request Refund",
+      html: `
+        <div class="text-left">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Reason</label>
+          <select id="swal-reason" class="swal2-input rounded-xl! text-sm! mt-1! mb-4! border-slate-200! focus:border-rose-500! focus:ring-0!">
+            <option value="Item not as described">Item not as described</option>
+            <option value="Damaged product">Damaged product</option>
+            <option value="Missing parts">Missing parts</option>
+            <option value="Late delivery">Late delivery</option>
+            <option value="Other">Other</option>
+          </select>
+          
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Explanation</label>
+          <textarea id="swal-message" class="swal2-textarea rounded-xl! text-sm! mt-1! border-slate-200! focus:border-rose-500! focus:ring-0!" placeholder="Please provide details about the issue..."></textarea>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: "#e11d48", 
+      cancelButtonColor: "#64748b", 
+      confirmButtonText: "Submit Request",
+      customClass: {
+        popup: 'rounded-[2rem] font-sans px-4 py-6',
+        confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
+        cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3'
+      },
+      preConfirm: () => {
+        const reason = document.getElementById('swal-reason').value;
+        const message = document.getElementById('swal-message').value;
+        if (!message) {
+          Swal.showValidationMessage('Please provide an explanation');
+          return false;
+        }
+        return { reason, message };
       }
-      return { reason, message };
-    }
-  });
+    });
 
-  if (formValues) {
-    try {
-      const { data } = await axiosInstance.patch(`/auth/request-refund/${orderId}`, {
-        reason: formValues.reason,
-        message: formValues.message
-      });
-
-      if (data.success) {
-        Swal.fire({
-          title: "Requested!",
-          text: "Admin will review your request shortly.",
-          icon: "success",
-          confirmButtonColor: "#0d9488", // teal-600
-          customClass: { 
-            popup: 'rounded-[2rem]',
-            confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
-          }
+    if (formValues) {
+      try {
+        const { data } = await axiosInstance.patch(`/auth/request-refund/${orderId}`, {
+          reason: formValues.reason,
+          message: formValues.message
         });
-        fetchOrders(); // Refresh status in UI
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Refund request failed");
-    }
-  }
-};
 
-  // --- IMPROVED FILTERING LOGIC ---
+        if (data.success) {
+          Swal.fire({
+            title: "Requested!",
+            text: "Admin will review your request shortly.",
+            icon: "success",
+            confirmButtonColor: "#0d9488",
+            customClass: { 
+              popup: 'rounded-[2rem]',
+              confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[10px] px-8 py-3',
+            }
+          });
+          fetchOrders();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Refund request failed");
+      }
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     if (activeTab === "pending") {
-      // Show only orders where buyer hasn't marked 'received' AND seller hasn't rejected
       const isRejected = order.sellerStatus === "cancelled" || order.sellerStatus === "rejected";
       return order.buyerStatus === "pending" && !isRejected;
     }
-    // "all-orders" returns everything
     return true;
   });
 
@@ -270,11 +277,11 @@ const ProfilePage = () => {
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase">Security & Account</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <div className="bg-slate-50 p-5 md:p-6 rounded-3xl border border-slate-100 transition-hover hover:border-slate-200">
+                  <div className="bg-slate-50 p-5 md:p-6 rounded-3xl border border-slate-100">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaIdBadge/> Full Name</p>
                     <p className="text-sm md:text-md font-bold text-slate-700">{authUser?.name}</p>
                   </div>
-                  <div className="bg-slate-50 p-5 md:p-6 rounded-3xl border border-slate-100 transition-hover hover:border-slate-200">
+                  <div className="bg-slate-50 p-5 md:p-6 rounded-3xl border border-slate-100">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaEnvelope/> Email Address</p>
                     <p className="text-sm md:text-md font-bold text-slate-700 break-all">{authUser?.email}</p>
                   </div>
@@ -288,17 +295,13 @@ const ProfilePage = () => {
                     </div>
                     <div className="space-y-3 w-full">
                       <button
-  onClick={() => fileInputRef.current.click()}
-  className="w-full bg-white text-slate-800 border-2 border-dashed border-slate-200 py-3 md:py-4 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:border-teal-500 transition-all px-4"
->
-  <span className="block w-full overflow-hidden whitespace-nowrap text-ellipsis">
-    {selectedFile
-      ? selectedFile.name.length > 25
-        ? selectedFile.name.slice(0, 25) + "..."
-        : selectedFile.name
-      : "Select New Image"}
-  </span>
-</button>
+                        onClick={() => fileInputRef.current.click()}
+                        className="w-full bg-white text-slate-800 border-2 border-dashed border-slate-200 py-3 md:py-4 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:border-teal-500 transition-all px-4"
+                      >
+                        <span className="block w-full overflow-hidden whitespace-nowrap text-ellipsis">
+                          {selectedFile ? (selectedFile.name.length > 25 ? selectedFile.name.slice(0, 25) + "..." : selectedFile.name) : "Select New Image"}
+                        </span>
+                      </button>
                       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                       {selectedFile && (
                         <button onClick={handleUpdateAvatar} disabled={isUpdatingAvatar} className="w-full bg-teal-600 text-white py-3 md:py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-teal-700 shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70">
@@ -315,11 +318,7 @@ const ProfilePage = () => {
                     <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New Secure Password" className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-teal-500 transition-all outline-none" />
                     <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Secure Password" className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-teal-500 transition-all outline-none" />
                   </div>
-                  <button 
-                    onClick={handleChangePassword} 
-                    disabled={isChangingPassword}
-                    className="w-full bg-slate-900 text-white py-4 md:py-5 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-teal-600 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
+                  <button onClick={handleChangePassword} disabled={isChangingPassword} className="w-full bg-slate-900 text-white py-4 md:py-5 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-teal-600 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2">
                     {isChangingPassword ? <FaSpinner className="animate-spin" /> : <FaLock />} Update Password
                   </button>
                 </section>
@@ -331,7 +330,6 @@ const ProfilePage = () => {
                     {activeTab === "pending" ? "Pending Orders" : "Recent Orders"}
                   </h3>
                   
-                  {/* REFUND NOTICE BANNER */}
                   <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8 flex items-start gap-3">
                     <FaInfoCircle className="text-amber-500 shrink-0 mt-1 md:mt-0.5" />
                     <p className="text-[10px] md:text-[11px] font-bold text-amber-800 leading-relaxed uppercase tracking-wider">
@@ -340,103 +338,190 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 md:pr-4 custom-scrollbar space-y-4 md:space-y-6">
+                <div className="flex-1 overflow-y-auto pr-2 md:pr-4 custom-scrollbar space-y-6">
                   {isLoading ? (
-                    [1, 2, 3].map(i => <div key={i} className="h-40 md:h-48 bg-slate-50 animate-pulse rounded-[4xl] md:rounded-[2.5rem]" />)
+                    [1, 2, 3].map(i => <div key={i} className="h-40 md:h-48 bg-slate-50 animate-pulse rounded-[4xl]" />)
                   ) : filteredOrders.length > 0 ? (
                     filteredOrders.map((order) => {
                       const rate = exchangeRates[currentCurrency] || 1;
                       const canRefund = order.buyerStatus === "received" && isRefundEligible(order.buyerStatusUpdateDate);
-                      
                       const isRejected = order.sellerStatus === "cancelled" || order.sellerStatus === "rejected";
+                      const isExpanded = !!expandedOrders[order._id];
+                      
                       const formattedDate = new Intl.DateTimeFormat('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
+                        day: '2-digit', month: 'short', year: 'numeric'
                       }).format(new Date(order.createdAt));
 
                       return (
-                        <div key={order._id} className="group border border-slate-100 rounded-[4xl] md:rounded-[2.5rem] p-5 md:p-8 bg-white hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500">
-                          <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-                            <span className="text-[9px] md:text-[10px] font-black text-slate-400 bg-slate-50 px-3 md:px-4 py-1.5 rounded-full border border-slate-100 uppercase tracking-widest">#{order.orderId}</span>
-                            <span className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <div key={order._id} className="group border border-slate-100 rounded-[2.5rem] p-5 md:p-6 bg-white hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300">
+                          
+                          {/* CARD COMPACT HEADER */}
+                          <div className="flex flex-wrap justify-between items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] md:text-[11px] font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 font-mono">
+                                #{order.orderId}
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                 <FaCalendarAlt className="text-slate-300" /> {formattedDate}
                               </span>
-                            <div className="flex gap-2 flex-wrap">
-                              {/* SELLER STATUS BADGE */}
-                              <span className={`px-3 py-1.5 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${
-                                isRejected ? 'bg-rose-50 text-rose-600' : 
-                                order.sellerStatus === 'shipped' || order.sellerStatus === 'delivered' ? 'bg-teal-50 text-teal-600' : 'bg-orange-50 text-orange-600'
+                            </div>
+                            
+                            <div className="flex gap-2 items-center">
+                              <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
+                                isRejected ? 'bg-rose-50 text-rose-600 border-rose-100' : 
+                                order.sellerStatus === 'shipped' || order.sellerStatus === 'delivered' ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-orange-50 text-orange-600 border-orange-100'
                               }`}>
                                 Seller: {isRejected ? "Rejected" : order.sellerStatus}
                               </span>
+
+                              {/* DROP DOWN ACCORDION TOGGLE */}
+                              <button 
+                                onClick={() => toggleOrderDetails(order._id)}
+                                className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 p-2 rounded-xl flex items-center gap-1 text-[9px] font-black uppercase tracking-wider transition-all"
+                              >
+                                Details 
+                                <FaChevronDown className={`transition-transform duration-300 ${isExpanded ? "rotate-180 text-teal-600" : "text-slate-400"}`} size={10} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* SIMPLE SUMMARY (ALWAYS VISIBLE) */}
+                          <div className="mt-4 flex justify-between items-center bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                            <p className="text-xs font-bold text-slate-600 truncate max-w-[200px] md:max-w-md">
+                              {order.items?.[0] ? `${order.items[0].name || "Item"} ${order.items.length > 1 ? `+${order.items.length - 1} more` : ""}` : "No Item details"}
+                            </p>
+                            <p className="text-sm font-black text-slate-900 ml-2 whitespace-nowrap">
+                              {order.currency} {(order.totalAmountLocal).toFixed(2)}
+                            </p>
+                          </div>
+
+                          {/* DYNAMIC HIDDEN EXTENDED ACCORDION BLOCK */}
+                          <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? "grid-rows-[1fr] opacity-100 mt-5" : "grid-rows-[0fr] opacity-0 overflow-hidden"}`}>
+                            <div className="overflow-hidden space-y-5">
                               
-                              {/* BUYER STATUS BADGE */}
-                              <span className={`px-3 py-1.5 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${order.buyerStatus === 'received' ? 'bg-teal-50 text-teal-600' : 'bg-orange-50 text-orange-600 animate-pulse'}`}>
-                                {order.buyerStatus}
-                              </span>
+                              {/* 1. MERCHANT & PROTOCOL GATEWAY METRICS */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50/80 rounded-xl p-4 border border-slate-100">
+                                <div className="flex items-center gap-3 text-xs">
+                                  <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 text-slate-400 shrink-0">
+                                    <FaStore />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Merchant Vendor</p>
+                                    <p className="font-bold text-slate-700 truncate">{order.sellerName || "Marketplace Merchant"}</p>
+                                    <p className="text-[10px] text-slate-400 truncate font-medium">{order.sellerEmail}</p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 text-xs">
+                                  <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 text-slate-400 shrink-0">
+                                    <FaCreditCard />
+                                  </div>
+                                  <div className="min-w-0 w-full">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Payment Route ({order.payment?.provider || 'PayFast'})</p>
+                                    <p className="font-mono text-[10px] text-slate-500 truncate select-all">{order.payment?.paymentId || "Unspecified Ledger ID"}</p>
+                                    <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wider">Status: {order.payment?.status || "Paid"}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 2. ITEMIZED LINE SUMMARY (WITH IMAGES) */}
+                              <div className="space-y-3 bg-white border border-slate-100 rounded-xl p-4">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Purchased Product Segments</p>
+                                {order.items?.map((item, idx) => (
+                                  <div key={idx} className="flex justify-between items-center gap-4 py-2 border-b border-slate-50 last:border-0 last:pb-0">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
+                                        <img 
+                                          src={item.image || "/placeholder-product.png"} 
+                                          alt="" 
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => { e.target.src = "/placeholder-product.png"; }}
+                                        />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-bold text-slate-700 leading-tight truncate max-w-[240px] md:max-w-xl">
+                                          {item.name}
+                                        </p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">
+                                          Quantity Segment: <span className="text-slate-900 font-bold">x{item.quantity}</span> 
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs font-black text-slate-900 whitespace-nowrap">
+                                      {order.currency} {(item.priceLocal * rate).toFixed(2)}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* 3. USER SHIPPING ADDRESS BLOCK */}
+                              {order.buyer?.address && (
+                                <div className="text-xs text-slate-600 bg-slate-50/40 border border-slate-100 rounded-xl p-4 flex gap-3">
+                                  <FaMapMarkerAlt className="text-slate-400 shrink-0 mt-0.5" />
+                                  <div>
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Delivery Destination Address</p>
+                                    <p className="font-bold text-slate-800">{order.buyer.name || "Recipient"}</p>
+                                    <p className="font-medium text-slate-600 mt-0.5">
+                                      {order.buyer.address.line1}, {order.buyer.address.city}, {order.buyer.address.postalCode}, {order.buyer.address.country}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 font-medium mt-1">Contact: {order.buyer.phone || "No phone added"}</p>
+                                  </div>
+                                </div>
+                              )}
+
                             </div>
                           </div>
 
-                          <div className="space-y-3 mb-6 md:mb-8">
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className="flex justify-between items-start md:items-center gap-4">
-                                <p className="text-[13px] md:text-sm font-bold text-slate-700 leading-tight">
-                                  <span className="text-teal-600 font-black mr-2">x{item.quantity}</span> {item.name || item.productId?.name}
-                                </p>
-                                <p className="text-[13px] md:text-sm font-black text-slate-900 whitespace-nowrap">{currentCurrency} {(item.priceUSD * rate).toFixed(2)}</p>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-6 border-t border-slate-100 gap-6">
-                            <div className="grid grid-cols-2 md:block md:space-y-1 w-full md:w-auto">
+                          {/* FOOTER ACTIONS & AMOUNTS Block (ALWAYS VISIBLE) */}
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-4 mt-4 border-t border-slate-100 gap-4">
+                            <div className="flex gap-4 bg-slate-50/40 px-3 py-2 rounded-xl border border-slate-100">
                               <div>
-                                <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest">Final Amount</p>
-                                <p className="text-lg md:text-2xl font-black text-slate-900">USD {order.totalAmountUSD.toFixed(2)}</p>
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-tight">Base Price</p>
+                                <p className="text-xs font-black text-slate-700">${(order.totalAmountUSD || 0).toFixed(2)} USD</p>
                               </div>
-                              <div className="text-right md:text-left">
-                                <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest">Paid Total</p>
-                                <p className="text-lg md:text-2xl font-black text-slate-900">{order.currency} {order.totalAmountLocal.toFixed(2)}</p>
+                              <div className="border-l border-slate-200 pl-4">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-tight">Settled Amount</p>
+                                <p className="text-sm font-black text-indigo-600">{order.currency} {(order.totalAmountLocal || 0).toFixed(2)}</p>
                               </div>
                             </div>
-                            {/* REFUND STATUS BADGE */}
-{order.refundStatus && order.refundStatus !== "none" && (
-  <span className={`px-3 py-1.5 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${
-    order.refundStatus === 'requested' ? 'bg-blue-50 text-blue-600' : 
-    order.refundStatus === 'approved' ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'
-  }`}>
-    Refund: {order.refundStatus}
-  </span>
-)}
-                            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+
+                            {order.refundStatus && order.refundStatus !== "none" && (
+                              <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
+                                order.refundStatus === 'requested' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                                order.refundStatus === 'approved' ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                              }`}>
+                                Refund: {order.refundStatus}
+                              </span>
+                            )}
+
+                            <div className="flex gap-2 w-full sm:w-auto">
                               {order.buyerStatus === "pending" && !isRejected && (
-                                <button onClick={() => handleOpenRatingModal(order._id)} className="flex-1 bg-teal-600 text-white px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-teal-700 shadow-lg shadow-teal-100 transition-all">
+                                <button onClick={() => handleOpenRatingModal(order._id)} className="flex-1 sm:flex-initial bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider hover:bg-teal-600 transition-all">
                                   Mark Received
                                 </button>
                               )}
                               {canRefund && order.refundStatus === "none" && (
-  <button 
-    onClick={() => handleRequestRefund(order._id)}
-    className="flex-1 bg-white text-rose-500 border-2 border-rose-100 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-rose-50 flex items-center justify-center gap-2 transition-all"
-  >
-    <FaUndoAlt size={10} /> Request Refund
-  </button>
-)}
+                                <button 
+                                  onClick={() => handleRequestRefund(order._id)}
+                                  className="flex-1 sm:flex-initial bg-white text-rose-500 border border-rose-200 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider hover:bg-rose-50 flex items-center justify-center gap-1.5 transition-all"
+                                >
+                                  <FaUndoAlt size={9} /> Request Refund
+                                </button>
+                              )}
 
-{/* Displaying state if already requested */}
-{order.refundStatus === "requested" && (
-  <div className="flex-1 text-center py-3.5 border-2 border-dashed border-blue-100 rounded-xl md:rounded-2xl">
-     <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Refund Processing...</p>
-  </div>
-)}
+                              {order.refundStatus === "requested" && (
+                                <div className="bg-blue-50/50 px-4 py-2 border border-dashed border-blue-200 rounded-xl whitespace-nowrap">
+                                  <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Refund Processing</p>
+                                </div>
+                              )}
                             </div>
                           </div>
+
                         </div>
                       );
                     })
                   ) : (
-                    <div className="py-20 md:py-32 text-center border-4 border-dashed border-slate-50 rounded-[2.5rem] md:rounded-[3rem]">
+                    <div className="py-20 md:py-32 text-center border-4 border-dashed border-slate-50 rounded-[2.5rem]">
                       <p className="font-black text-slate-300 text-[10px] md:text-[11px] uppercase tracking-[0.4em]">Empty Vault</p>
                     </div>
                   )}

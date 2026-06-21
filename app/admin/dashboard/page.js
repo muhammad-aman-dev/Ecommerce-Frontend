@@ -20,7 +20,8 @@ import {
   FaGlobeAmericas,
   FaStar,
   FaUndoAlt,
-  FaExclamationTriangle 
+  FaExclamationTriangle,
+  FaTimesCircle
 } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import Swal from "sweetalert2";
@@ -153,7 +154,7 @@ const modules = [
     id: 13,
     title: "Seller Complaints",
     description: "Handle complaints against sellers",
-    icon: <FaExclamationTriangle />, // NEW ICON
+    icon: <FaExclamationTriangle />,
     route: "/admin/dashboard/seller-complaints",
     color: "text-orange-600",
     bg: "bg-orange-50"
@@ -166,6 +167,15 @@ const modules = [
     route: "/admin/dashboard/refund-requests",
     color: "text-rose-600",
     bg: "bg-rose-50"
+  },
+  {
+    id: 17,
+    title: "Rejected Orders",
+    description: "Review orders rejected by sellers",
+    icon: <FaTimesCircle />,
+    route: "/admin/dashboard/rejected-orders",
+    color: "text-red-700",
+    bg: "bg-red-100"
   },
   {
     id: 15,
