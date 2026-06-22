@@ -52,7 +52,8 @@ const SellerProfilePage = () => {
 
   const handleWithdrawRequest = async () => {
     // Threshold Check: Must be greater than $30
-    if (seller.balance < 30) {
+    console.log(seller)
+    if (seller.remainingPayout < 30) {
       return Swal.fire({
         icon: "warning",
         title: "Minimum Limit Not Met",
@@ -182,7 +183,7 @@ const SellerProfilePage = () => {
                 Available to Withdraw
               </p>
               <p className="text-3xl font-black text-slate-900 italic">
-                ${seller.balance?.toLocaleString() || 0}
+                ${seller.remainingPayout?.toLocaleString() || 0}
               </p>
             </div>
             <button
