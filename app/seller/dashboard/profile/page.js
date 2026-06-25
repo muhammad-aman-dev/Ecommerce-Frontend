@@ -14,9 +14,12 @@ import {
   FaArrowRight,
   FaDollarSign,
   FaArrowLeft,
+  FaUniversity,
+  FaTimes,
+  FaPlus,
 } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +27,17 @@ const SellerProfilePage = () => {
   const [seller, setSeller] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Modal State for Bank Details
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [bankForm, setBankForm] = useState({
+    accountHolderName: "",
+    bankName: "",
+    accountNumber: "",
+    iban: "",
+    swiftCode: "",
+    country: "",
+  });
 
   const router = useRouter();
 
@@ -35,8 +49,18 @@ const SellerProfilePage = () => {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get("/seller/getmydetails");
-      if (response.data.success) {
+      if (response.data?.success) {
         setSeller(response.data.seller);
+        if (response.data.seller?.payoutDetails) {
+          setBankForm({
+            accountHolderName: response.data.seller.payoutDetails.accountHolderName || "",
+            bankName: response.data.seller.payoutDetails.bankName || "",
+            accountNumber: response.data.seller.payoutDetails.accountNumber || "",
+            iban: response.data.seller.payoutDetails.iban || "",
+            swiftCode: response.data.seller.payoutDetails.swiftCode || "",
+            country: response.data.seller.payoutDetails.country || "",
+          });
+        }
       }
     } catch (error) {
       Swal.fire({
@@ -50,9 +74,57 @@ const SellerProfilePage = () => {
     }
   };
 
+  const handleBankFormChange = (e) => {
+    setBankForm({ ...bankForm, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveBankDetails = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      const response = await axiosInstance.post("/seller/add-bank-details", {
+        payoutDetails: bankForm,
+      });
+
+      if (response.data?.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Bank Details Secured",
+          text: "Your payout configuration has been successfully logged.",
+          confirmButtonColor: "#14b8a6",
+        });
+        setIsBankModalOpen(false);
+        fetchSellerDetails(); 
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: error.response?.data?.message || "Could not save details.",
+        confirmButtonColor: "#e11d48",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleWithdrawRequest = async () => {
-    // Threshold Check: Must be greater than $30
-    console.log(seller)
+    const hasBankDetails = 
+      seller?.payoutDetails && 
+      seller.payoutDetails.bankName && 
+      (seller.payoutDetails.accountNumber || seller.payoutDetails.iban);
+
+    if (!hasBankDetails) {
+      Swal.fire({
+        icon: "info",
+        title: "Bank Details Required",
+        text: "Please add your payout configuration before requesting a withdrawal.",
+        confirmButtonColor: "#0f172a",
+      });
+      setIsBankModalOpen(true);
+      return;
+    }
+
     if (seller.remainingPayout < 30) {
       return Swal.fire({
         icon: "warning",
@@ -64,15 +136,18 @@ const SellerProfilePage = () => {
 
     try {
       setIsSubmitting(true);
-      const response = await axiosInstance.post("/seller/request-withdrawal");
-      if (response.data.success) {
+      const response = await axiosInstance.post("/seller/request-withdrawal", {
+        sellerId: seller._id,
+        amount: seller.remainingPayout,
+      });
+      if (response.data?.success) {
         Swal.fire({
           icon: "success",
           title: "Request Sent",
           text: "Your withdrawal request has been submitted to the admin.",
           confirmButtonColor: "#14b8a6",
         });
-        fetchSellerDetails(); // Refresh balance
+        fetchSellerDetails();
       }
     } catch (error) {
       Swal.fire({
@@ -92,7 +167,7 @@ const SellerProfilePage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between mb-10 gap-6">
             <div className="flex gap-6 items-center">
-              <div className="w-20 h-20 bg-slate-200 rounded-4xl"></div>
+              <div className="w-20 h-20 bg-slate-200 rounded-3xl"></div>
               <div className="space-y-2">
                 <div className="h-8 w-48 bg-slate-200 rounded-lg"></div>
                 <div className="h-4 w-32 bg-slate-200 rounded-lg"></div>
@@ -100,20 +175,14 @@ const SellerProfilePage = () => {
             </div>
             <div className="h-24 w-64 bg-slate-200 rounded-[2.5rem]"></div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-32 bg-white rounded-[2.5rem] border border-slate-100"
-              ></div>
-            ))}
-          </div>
         </div>
       </div>
     );
   }
 
   if (!seller) return null;
+
+  const hasConfiguredBank = seller.payoutDetails && seller.payoutDetails.bankName;
 
   const statCards = [
     {
@@ -156,9 +225,10 @@ const SellerProfilePage = () => {
           <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
           Dashboard
         </button>
+        
         <header className="mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-4xl bg-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-slate-200">
+            <div className="w-20 h-20 rounded-3xl bg-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-slate-200">
               {seller.name?.charAt(0)}
             </div>
             <div>
@@ -171,8 +241,7 @@ const SellerProfilePage = () => {
                 </span>
               </div>
               <p className="text-slate-400 font-bold mt-1 tracking-wide flex items-center gap-2 italic">
-                <FaShieldAlt className="text-slate-300" /> Verified Tradexon
-                Partner
+                <FaShieldAlt className="text-slate-300" /> Verified Tradexon Partner
               </p>
             </div>
           </div>
@@ -204,10 +273,7 @@ const SellerProfilePage = () => {
         >
           <FaExclamationTriangle className="text-amber-500 shrink-0" />
           <p className="text-[11px] font-bold text-amber-800 leading-relaxed uppercase tracking-tight">
-            <span className="font-black">Notice:</span> Balance and Revenue
-            fields update automatically only after the{" "}
-            <span className="underline">Buyer marks the order as Received</span>
-            .
+            <span className="font-black">Notice:</span> Balance and Revenue fields update automatically only after the <span className="underline">Buyer marks the order as Received</span>.
           </p>
         </motion.div>
 
@@ -221,9 +287,7 @@ const SellerProfilePage = () => {
               key={i}
               className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm"
             >
-              <div
-                className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-lg`}
-              >
+              <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-lg`}>
                 {stat.icon}
               </div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -237,7 +301,7 @@ const SellerProfilePage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT: PERSONAL INFO */}
+          {/* LEFT: PERSONAL INFO & VERIFICATION */}
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-white rounded-[3rem] p-8 border border-slate-100 shadow-sm">
               <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8 flex items-center gap-2">
@@ -245,77 +309,47 @@ const SellerProfilePage = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                    Email Address
-                  </p>
-                  <p className="text-sm font-bold text-slate-700">
-                    {seller.email}
-                  </p>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Email Address</p>
+                  <p className="text-sm font-bold text-slate-700">{seller.email}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                    Phone Number
-                  </p>
-                  <p className="text-sm font-bold text-slate-700">
-                    {seller.phone}
-                  </p>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Phone Number</p>
+                  <p className="text-sm font-bold text-slate-700">{seller.phone}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                    Store Created
-                  </p>
-                  <p className="text-sm font-bold text-slate-700">
-                    {new Date(seller.createdAt).toLocaleDateString()}
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Store Created</p>
+                  <p className="text-sm font-bold text-slate-7700">
+                    {seller.createdAt ? new Date(seller.createdAt).toLocaleDateString() : "N/A"}
                   </p>
                 </div>
               </div>
 
               {/* DOCUMENTS */}
               <div className="mt-10 pt-10 border-t border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">
-                  Verification Documents
-                </p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Verification Documents</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative aspect-video rounded-2xl overflow-hidden border bg-slate-100">
-                    <Image
-  src={seller.idFrontLink}
-  alt="Front ID"
-  fill
-  sizes="(max-width: 768px) 100vw, 50vw"
-  className="object-cover opacity-80 hover:opacity-100 transition-opacity"
-/>
+                    {seller.idFrontLink && <Image src={seller.idFrontLink} alt="Front ID" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover opacity-80 hover:opacity-100 transition-opacity" />}
                   </div>
                   <div className="relative aspect-video rounded-2xl overflow-hidden border bg-slate-100">
-                    <Image
-  src={seller.idBackLink}
-  alt="Back ID"
-  fill
-  sizes="(max-width: 768px) 100vw, 50vw"
-  className="object-cover opacity-80 hover:opacity-100 transition-opacity"
-/>
+                    {seller.idBackLink && <Image src={seller.idBackLink} alt="Back ID" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover opacity-80 hover:opacity-100 transition-opacity" />}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: PAYOUT & ADMIN CONTACT */}
+          {/* RIGHT: PAYOUT & BANK CONFIG DETAILS */}
           <div className="lg:col-span-5 space-y-6">
-            {/* PAYOUT CARD */}
+            {/* PAYOUT STATUS */}
             <div className="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-teal-500/10 rounded-full blur-3xl"></div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-400 mb-8">
-                Payout Status
-              </h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-400 mb-8">Payout Status</h2>
 
               <div className="space-y-8">
                 <div>
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                    Remaining Payout (Owed by Admin)
-                  </p>
-                  <p className="text-4xl font-black italic tracking-tight">
-                    ${seller.remainingPayout?.toLocaleString() || 0}
-                  </p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Remaining Payout</p>
+                  <p className="text-4xl font-black italic tracking-tight">${seller.remainingPayout?.toLocaleString() || 0}</p>
                 </div>
 
                 <button
@@ -325,50 +359,144 @@ const SellerProfilePage = () => {
                 >
                   {isSubmitting ? "Processing..." : "Request Withdrawal"}
                 </button>
-
-                <div className="grid grid-cols-2 pt-4 gap-4 border-t border-slate-800">
-                  <div>
-                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
-                      Total Reviews
-                    </p>
-                    <p className="text-lg font-black">
-                      {seller.numReviews || 0}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
-                      Withdrawal Limit
-                    </p>
-                    <p className="text-lg font-black text-teal-400 italic font-sans">
-                      $30.00+
-                    </p>
-                  </div>
-                </div>
               </div>
+            </div>
+
+            {/* BANK ACCOUNT AT THE END */}
+            <div className="bg-white rounded-[3rem] p-8 border border-slate-100 shadow-sm space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
+                  <FaUniversity className="text-slate-900" /> Bank Settlement Account
+                </h2>
+                {hasConfiguredBank && (
+                  <button 
+                    onClick={() => setIsBankModalOpen(true)}
+                    className="text-[10px] text-teal-600 font-bold uppercase tracking-wider hover:underline"
+                  >
+                    Modify
+                  </button>
+                )}
+              </div>
+
+              {hasConfiguredBank ? (
+                <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-slate-700 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                  <div className="col-span-2">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Account Holder Name</p>
+                    <p className="text-sm font-bold text-slate-900">{seller.payoutDetails.accountHolderName}</p>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Bank Entity</p>
+                    <p className="text-xs font-bold">{seller.payoutDetails.bankName}</p>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Country</p>
+                    <p className="text-xs font-bold">{seller.payoutDetails.country}</p>
+                  </div>
+                  {seller.payoutDetails.iban && (
+                    <div className="col-span-2">
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">IBAN String</p>
+                      <p className="text-xs font-mono font-bold tracking-tight text-slate-600">{seller.payoutDetails.iban}</p>
+                    </div>
+                  )}
+                  {seller.payoutDetails.accountNumber && (
+                    <div>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Account Number</p>
+                      <p className="text-xs font-mono font-bold text-slate-600">{seller.payoutDetails.accountNumber}</p>
+                    </div>
+                  )}
+                  {seller.payoutDetails.swiftCode && (
+                    <div>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">SWIFT/BIC</p>
+                      <p className="text-xs font-mono font-bold text-slate-600">{seller.payoutDetails.swiftCode}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center">
+                  <p className="text-xs text-slate-400 font-medium mb-4">No remittance destination setup discovered.</p>
+                  <button
+                    onClick={() => setIsBankModalOpen(true)}
+                    className="mx-auto flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-teal-600 transition-colors"
+                  >
+                    <FaPlus size={10} /> Add Bank Details
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ADMIN CONTACT NOTE */}
             <div className="bg-white rounded-[3rem] p-8 border-2 border-dashed border-slate-200 flex flex-col items-center text-center">
-              <div className="bg-slate-100 p-4 rounded-full mb-4">
-                <FaHeadset className="text-slate-400 text-xl" />
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                Need to change details?
-              </p>
-              <p className="text-xs font-bold text-slate-600 leading-relaxed">
-                For security, profile edits and account closures are handled by
-                administrators.
-              </p>
-              <a
-                href="mailto:admin@tradexon.com"
-                className="mt-4 text-slate-900 font-black text-[10px] uppercase underline tracking-widest hover:text-teal-600 transition-colors"
-              >
-                Contact Admin Support
-              </a>
+              <div className="bg-slate-100 p-4 rounded-full mb-4"><FaHeadset className="text-slate-400 text-xl" /></div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Need to change details?</p>
+              <p className="text-xs font-bold text-slate-600 leading-relaxed">For security, profile edits and account closures are handled by administrators.</p>
+              <a href="mailto:admin@tradexon.com" className="mt-4 text-slate-900 font-black text-[10px] uppercase underline tracking-widest hover:text-teal-600 transition-colors">Contact Admin Support</a>
             </div>
           </div>
         </div>
       </div>
+
+      {/* BANK DETAILS OVERLAY MODAL */}
+      <AnimatePresence>
+        {isBankModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white w-full max-w-lg rounded-[2.5rem] border-2 border-slate-900 p-8 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setIsBankModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
+              >
+                <FaTimes size={18} />
+              </button>
+
+              <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-2 flex items-center gap-2">
+                <FaUniversity className="text-teal-600" /> Payout Configurations
+              </h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Enter bank details to receive payments.</p>
+
+              <form onSubmit={handleSaveBankDetails} className="space-y-4">
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Account Holder Name</label>
+                  <input required type="text" name="accountHolderName" value={bankForm.accountHolderName} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Bank Name</label>
+                    <input required type="text" name="bankName" value={bankForm.bankName} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Country</label>
+                    <input required type="text" name="country" value={bankForm.country} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Account Number</label>
+                  <input type="text" name="accountNumber" value={bankForm.accountNumber} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" />
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">IBAN</label>
+                  <input type="text" name="iban" value={bankForm.iban} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" placeholder="PK45MEZN..." />
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">SWIFT / BIC Code</label>
+                  <input type="text" name="swiftCode" value={bankForm.swiftCode} onChange={handleBankFormChange} className="w-full border-2 border-slate-100 focus:border-slate-900 p-3 rounded-xl text-sm font-bold outline-none" placeholder="e.g. MEZNPKKA" />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full mt-4 bg-slate-900 hover:bg-teal-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all disabled:bg-slate-300"
+                >
+                  {isSubmitting ? "Saving..." : "Save Bank Information"}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
